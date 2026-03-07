@@ -1,0 +1,27 @@
+# Virtual Environment
+venv/
+env/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Credentials and Keys
+.env
+credentials.json
+token.json
+token_work.json
+*token*.json
+
+# Resumes (Generated and Base)
+*.docx
+# If you want to keep base_resume.docx tracked, you can uncomment the line below:
+# !base_resume.docx
+
+# Logs and State
+activity_log.txt
+*.log
+bot_state.json
+sent_notifications.json
+processed_jobs.json
+processed_recruiters.json
+pending_approvals.json
