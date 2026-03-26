@@ -7,7 +7,8 @@ import os
 os.environ["PYTHONUNBUFFERED"] = "1"
 
 def run_services():
-    print("--- Starting Combined Auto-Recruiter Services ---", flush=True)
+    print("--- Starting Combined Auto-Recruiter Services (v1.0.1) ---", flush=True)
+    print("[Link Test] GitHub -> Render: SUCCESS", flush=True)
     
     # Start the Recruiter Bot (main.py)
     print("Launching Recruiter Bot (main.py)...", flush=True)
