@@ -1,4 +1,8 @@
 import os
+from dotenv import load_dotenv
+
+# Redundantly load dotenv in case it's mounted as a secret file in a non-standard path
+load_dotenv()
 
 def get_state_path(filename):
     """
@@ -8,7 +12,9 @@ def get_state_path(filename):
     state_dir = os.environ.get("STATE_DIR", ".")
     path = os.path.abspath(os.path.join(state_dir, filename))
     
-    # Verbose logging for Render debugging
+    # Debug: Print environment keys (sanitized)
+    keys = [k for k in os.environ.keys() if k.isupper()]
+    print(f"[Persistence] Debug: Available Env Keys: {', '.join(keys[:10])}... (Total: {len(keys)})")
     print(f"[Persistence] Request for '{filename}'. Target path: {path}")
     
     if not os.path.exists(path):
