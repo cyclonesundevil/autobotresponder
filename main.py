@@ -11,7 +11,7 @@ from discord.ext import tasks
 from gmail_client import get_gmail_service, get_body
 from resume_processor import generate_tailored_resume_docx, is_recruiter_opportunity, extract_forward_to_email
 from email_drafter import create_draft
-from persistence_utils import get_state_path
+from persistence_utils import get_state_path, cleanup_old_resumes
 import sms_manager
 
 load_dotenv()
@@ -137,6 +137,9 @@ async def gmail_check_task():
                 filepath = generate_tailored_resume_docx(body, BASE_RESUME_PATH, output_docx)
                 
                 if filepath:
+                    # Clean up disk space: Keep only the 5 most recent resumes
+                    cleanup_old_resumes(max_count=5)
+                    
                     print("Drafting reply...")
                     reply_body = (
                         "Hello,\n\n"

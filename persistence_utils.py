@@ -37,3 +37,35 @@ def get_state_path(filename):
             print(f"[Persistence] WARNING: Env var '{env_key}' not found or empty.")
                 
     return path
+
+def cleanup_old_resumes(max_count=5):
+    """
+    Scans the STATE_DIR for tailored resumes and deletes all but the 
+    most recent 'max_count' files to conserve disk space.
+    """
+    state_dir = os.environ.get("STATE_DIR", ".")
+    resumes = []
+    
+    # Identify tailored resume files
+    for f in os.listdir(state_dir):
+        if f.startswith("tailored_resume_") and f.endswith(".docx"):
+            full_path = os.path.join(state_dir, f)
+            resumes.append({
+                "path": full_path,
+                "mtime": os.path.getmtime(full_path)
+            })
+            
+    # Sort by time (newest first)
+    resumes.sort(key=lambda x: x["mtime"], reverse=True)
+    
+    # Delete older ones
+    if len(resumes) > max_count:
+        print(f"[Cleanup] Found {len(resumes)} resumes. Keeping {max_count} newest.")
+        for r in resumes[max_count:]:
+            try:
+                os.remove(r["path"])
+                print(f"[Cleanup] Deleted old resume: {os.path.basename(r['path'])}")
+            except Exception as e:
+                print(f"[Cleanup] ERROR deleting {r['path']}: {e}")
+    else:
+        print(f"[Cleanup] System healthy. Resumes Count: {len(resumes)}/{max_count}")
