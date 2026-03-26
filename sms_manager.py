@@ -300,6 +300,39 @@ async def on_message(message):
 
     await bot.process_commands(message)
 
+@bot.command(name="status")
+async def status_command(ctx):
+    """Provides a status summary in Discord."""
+    pending = _load_pending_approvals()
+    
+    # Check bot_state.json for pause status
+    bot_state_file = get_state_path("bot_state.json")
+    status_str = "RUNNING"
+    if os.path.exists(bot_state_file):
+        try:
+            with open(bot_state_file, "r") as f:
+                state = json.load(f)
+                if state.get("paused"):
+                    status_str = "PAUSED"
+        except:
+            pass
+            
+    # Count leads
+    lead_count = 0
+    if os.path.exists(SENT_NOTIFICATIONS_FILE):
+        try:
+            with open(SENT_NOTIFICATIONS_FILE, "r") as f:
+                lead_count = len(json.load(f))
+        except:
+            pass
+            
+    response = (
+        f"**Bot Status:** `{status_str}`\n"
+        f"**Pending Approvals:** `{len(pending)}`\n"
+        f"**Total Leads Processed:** `{lead_count}`"
+    )
+    await ctx.send(response)
+
 async def handle_approval(message):
     global _gmail_service
     if not _gmail_service:
