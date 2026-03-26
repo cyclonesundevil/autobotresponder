@@ -8,13 +8,14 @@ from discord.ext import commands, tasks
 from dotenv import load_dotenv
 from google import genai
 from gmail_client import get_body
+from persistence_utils import get_state_path
 
 load_dotenv()
 
 # Gemini setup
 MODEL_ID = 'gemini-2.5-flash-lite'
-PENDING_APPROVALS_FILE = "pending_approvals.json"
-SENT_NOTIFICATIONS_FILE = "sent_notifications.json"
+PENDING_APPROVALS_FILE = get_state_path("pending_approvals.json")
+SENT_NOTIFICATIONS_FILE = get_state_path("sent_notifications.json")
 
 # Discord Setup
 TOKEN = os.getenv("DISCORD_BOT_TOKEN")

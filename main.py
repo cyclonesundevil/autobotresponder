@@ -11,12 +11,13 @@ from discord.ext import tasks
 from gmail_client import get_gmail_service, get_body
 from resume_processor import generate_tailored_resume_docx, is_recruiter_opportunity, extract_forward_to_email
 from email_drafter import create_draft
+from persistence_utils import get_state_path
 import sms_manager
 
 load_dotenv()
 
 BASE_RESUME_PATH = os.getenv("BASE_RESUME_PATH")
-PROCESSED_RECRUITERS_FILE = "processed_recruiters.json"
+PROCESSED_RECRUITERS_FILE = get_state_path("processed_recruiters.json")
 
 def _load_processed_recruiters():
     if os.path.exists(PROCESSED_RECRUITERS_FILE):
@@ -55,8 +56,9 @@ async def gmail_check_task():
     print("--- Checking for recruiter emails ---")
     
     # Remote Control Check
-    if os.path.exists("bot_state.json"):
-        with open("bot_state.json", "r") as f:
+    bot_state_file = get_state_path("bot_state.json")
+    if os.path.exists(bot_state_file):
+        with open(bot_state_file, "r") as f:
             state = json.load(f)
             if state.get("paused"):
                 print("Bot is PAUSED via SMS. Skipping loop.")

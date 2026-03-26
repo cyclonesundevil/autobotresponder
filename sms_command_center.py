@@ -5,15 +5,16 @@ import time
 from twilio.rest import Client as TwilioClient
 from dotenv import load_dotenv
 from gmail_client import get_gmail_service
+from persistence_utils import get_state_path
 import sms_manager
 
 load_dotenv()
 
-BOT_STATE_FILE = "bot_state.json"
-AGENT_NOTES_FILE = "agent_notes.txt"
-SENT_NOTIFICATIONS_FILE = "sent_notifications.json"
-ACTIVITY_LOG_FILE = "activity_log.txt"
-PROCESSED_MESSAGES_FILE = "processed_messages.json"
+BOT_STATE_FILE = get_state_path("bot_state.json")
+AGENT_NOTES_FILE = get_state_path("agent_notes.txt")
+SENT_NOTIFICATIONS_FILE = get_state_path("sent_notifications.json")
+ACTIVITY_LOG_FILE = get_state_path("activity_log.txt")
+PROCESSED_MESSAGES_FILE = get_state_path("processed_messages.json")
 
 # Global Gmail service for sending approvals
 _gmail_service = None

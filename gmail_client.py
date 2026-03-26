@@ -12,6 +12,7 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+from persistence_utils import get_state_path
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/gmail.modify']
@@ -51,10 +52,11 @@ def get_body(payload):
     
     return ""
 
-def get_gmail_service(token_file='token.json'):
+def get_gmail_service(token_file='token_work.json'):
     """Shows basic usage of the Gmail API.
     Lists the user's Gmail labels.
     """
+    token_file = get_state_path(token_file)
     creds = None
     # The file token_file stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first

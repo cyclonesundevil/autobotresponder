@@ -1,0 +1,28 @@
+services:
+  - type: worker
+    name: auto-recruiter-bot
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python main.py
+    envVars:
+      - fromGroup: auto-recruiter-secrets
+      - key: STATE_DIR
+        value: /data
+    disk:
+      name: bot-data
+      mountPath: /data
+      sizeGB: 7
+
+  - type: worker
+    name: sms-command-center
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python sms_command_center.py
+    envVars:
+      - fromGroup: auto-recruiter-secrets
+      - key: STATE_DIR
+        value: /data
+    disk:
+      name: bot-data
+      mountPath: /data
+      sizeGB: 7
