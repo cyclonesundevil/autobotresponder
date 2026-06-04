@@ -15,6 +15,30 @@ else:
 # gemini-2.5-flash-lite: Google's smallest/cheapest model, built for at-scale usage
 MODEL_ID = 'gemini-2.5-flash-lite'
 
+
+def build_resume_prompt(email_body, base_text):
+    """Build a conservative prompt that tailors the resume without inventing facts."""
+    return f"""
+    You are a careful resume editor.
+    Tailor the resume to the recruiter email using only the facts already present in the base resume.
+
+    CRITICAL RULES:
+    - preserve the existing facts, chronology, job titles, dates, employers, and achievements from the base resume.
+    - preserve the existing facts and wording style of the base resume wherever possible.
+    - Do not invent new companies, roles, dates, technologies, certifications, metrics, or accomplishments.
+    - Do not add unsupported claims or make the resume sound more senior than the source material.
+    - If the recruiter email mentions skills or keywords, highlight them only when they are already supported by the existing resume content.
+    - Keep the tone professional and factual; avoid exaggerated AI-only framing or suspicious overstatement.
+    - Output the tailored resume in PURE MARKDOWN format.
+
+    Recruiter Email:
+    {email_body}
+
+    Base Resume:
+    {base_text}
+    """
+
+
 def extract_text_from_docx(file_path):
     """Reads paragraphs and tables from a word doc to ensure no content is missed."""
     doc = Document(file_path)
@@ -129,44 +153,8 @@ def generate_tailored_resume_docx(email_body, base_resume_path, output_path):
     print(f"Reading base resume from {base_resume_path}...")
     base_text = extract_text_from_docx(base_resume_path)
 
-    # Single prompt: extract requirements AND tailor resume in one API call
-    # (halves quota usage vs. the previous two-call approach)
     print("Tailoring resume with Gemini (single call)...")
-    combined_prompt = f"""
-    You are an expert career coach. Below is a recruiter email and my base resume.
-    First, internally identify the key skills, technologies, job title, and company name from the email.
-    Then, rewrite my resume to highlight experience that best fits those requirements.
-    
-    CRITICAL INSTRUCTION: LEAN HEAVILY INTO MY AI EXPERIENCE. 
-    Regardless of the specific role, aggressively emphasize any and all artificial intelligence, 
-    machine learning, or LLM experience I have. 
-    Bring my AI-related projects and responsibilities to the very top of my experience section 
-    and ensure they are the focal point of my summary. Make it clear I am an AI-focused engineer.
-    
-    IMPORTANT PERSONAL DETAILS (USE EXACTLY):
-    - Name: Jose C. Ramirez
-    - Location: Chandler, AZ (Always include City, State)
-    - Phone: (480) 209-3709
-    - Email: cyclsun@gmail.com
-    - GitHub: https://github.com/cyclonesundevil
-    - LinkedIn: DO NOT include any LinkedIn links or references.
-    
-    IMPORTANT CONTENT RULES:
-    - Use the company names exactly as they appear in the Base Resume.
-    - Preserve the original dates and job titles where appropriate.
-    - Tailor the bullet points to the job description provided in the email, but ALWAYS filter it through an AI-heavy lens.
-    
-    Output the tailored resume in PURE MARKDOWN format.
-    Use '#' for the main title (Jose C. Ramirez), '##' for section headers (e.g., Summary, Experience, Education),
-    and standard bullet points ('-') for list items.
-    DO NOT include any conversational text, preamble, or explanation — just the resume.
-
-    Recruiter Email:
-    {email_body}
-
-    My Base Resume:
-    {base_text}
-    """
+    combined_prompt = build_resume_prompt(email_body, base_text)
     tailored_md = client.models.generate_content(model=MODEL_ID, contents=combined_prompt).text
 
     print(f"Generating new Word document at {output_path}...")

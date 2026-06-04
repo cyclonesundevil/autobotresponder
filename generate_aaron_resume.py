@@ -14,43 +14,26 @@ def generate_custom_resume(email_body, base_resume_path, output_path):
     base_text = base_text.replace("Jan 2013- July 2014", "Jan 2013 - March 24, 2026")
     
     custom_prompt = f"""
-    You are an expert career coach. Below is a recruiter email and my base resume.
-    
-    USER'S REQUEST:
-    Add a 'Technical Skills' or 'Required Skills' section at the VERY TOP of the resume (immediately after the contact details/header).
-    This section MUST explicitly include:
-    - JavaScript, Angular, React, PostgreSQL, Oracle SQL, MySQL
-    - OpenAI, LLM Integration, RAG Pipelines, GitHub Co-Pilot, Google Gemini 2.5
-    
-    Add a NEW experience block for 'MicroComp IT Solutions' (March 2024 - Present) at the VERY TOP of the Experience section.
-    Ensure 'MicroComp IT Solutions' reflects hands-on work with these specific technologies (including Oracle SQL and MySQL).
-    
-    The chronology MUST be:
-    1. Technical Skills (at the top)
-    2. MicroComp IT Solutions (March 2024 - Present)
-    3. Wells Fargo (Jan 2013 - March 24, 2026)
-    4. [Previous experience follows...]
-    
-    IMPORTANT PERSONAL DETAILS (USE EXACTLY):
+    You are a careful resume editor.
+    Tailor the resume to the recruiter email using only the facts already present in the base resume.
+
+    CRITICAL RULES:
+    - Preserve the existing employers, dates, titles, and achievements from the base resume.
+    - Do not invent new companies, dates, technologies, or bullet points.
+    - If the recruiter email mentions relevant keywords, emphasize them only through existing experience and skills already supported by the base resume.
+    - Keep the resume factual, professional, and conservative.
+    - Output the resume in PURE MARKDOWN format.
+
+    Important personal details to preserve:
     - Name: Jose C. Ramirez
     - Location: Chandler, AZ
     - Phone: (480) 209-3709
     - Email: cyclsun@gmail.com
-    - Website: www.microcompit.com
     - GitHub: https://github.com/cyclonesundevil
-    - LinkedIn: DO NOT include any LinkedIn links or references.
-    
-    CRITICAL: YOU MUST INCLUDE THE WEBSITE (www.microcompit.com) in the contact header.
-    
-    CONTENT RULES:
-    - Use the company names exactly as they appear in the Base Resume.
-    - If 'MicroComp IT Solutions' is NOT in the resume, add it as the latest experience (Present).
-    - Ensure all the technologies above are naturally integrated into the 'MicroComp IT Solutions' bullet points.
-    - Output the resume in PURE MARKDOWN format.
-    
+
     Email from Recruiter:
     {email_body}
-    
+
     Base Resume:
     {base_text}
     """

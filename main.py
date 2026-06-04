@@ -64,6 +64,7 @@ async def gmail_check_task():
                 print("Bot is PAUSED via SMS. Skipping loop.")
                 return
 
+                
     # Date Filter: Only last 3 months
     three_months_ago = (datetime.datetime.now() - datetime.timedelta(days=90)).strftime("%Y/%m/%d")
     
