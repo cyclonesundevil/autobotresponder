@@ -1,6 +1,10 @@
-from resume_processor import generate_tailored_resume_docx, client, MODEL_ID, extract_text_from_docx
-import os
-from docx import Document
+from resume_processor import (
+    client,
+    extract_text_from_docx,
+    MODEL_ID,
+    render_tailored_resume_on_template,
+)
+import re
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -19,7 +23,9 @@ def generate_custom_resume(email_body, base_resume_path, output_path):
 
     CRITICAL RULES:
     - Preserve the existing employers, dates, titles, and achievements from the base resume.
+    - Do not invent schools, degrees, institutions, certifications, or names.
     - Do not invent new companies, dates, technologies, or bullet points.
+    - If a section or detail is not present in the base resume, omit it instead of creating it.
     - If the recruiter email mentions relevant keywords, emphasize them only through existing experience and skills already supported by the base resume.
     - Keep the resume factual, professional, and conservative.
     - Output the resume in PURE MARKDOWN format.
@@ -40,7 +46,30 @@ def generate_custom_resume(email_body, base_resume_path, output_path):
     
     print("Generating resume with custom prompt...")
     tailored_md = client.models.generate_content(model=MODEL_ID, contents=custom_prompt).text
-    
+
+    # Drop fabricated education/school details that are not present in the base resume.
+    base_text_lower = base_text.lower()
+    filtered_lines = []
+    skip_education_section = False
+    for line in tailored_md.splitlines():
+        stripped = line.strip()
+        if re.match(r'^(#{1,6}\s*)?education\b', stripped, re.I):
+            skip_education_section = True
+            continue
+        if skip_education_section and (stripped.startswith('#') or stripped.startswith('##') or stripped.startswith('###') or stripped == '---'):
+            skip_education_section = False
+        if skip_education_section:
+            continue
+        if re.search(r'\b(bachelor|bachelor\'s|master|masteral|doctoral|associate|degree|university|college|school|stanford|berkeley)\b', stripped, re.I):
+            if 'education' not in base_text_lower and 'degree' not in base_text_lower and 'university' not in base_text_lower and 'college' not in base_text_lower:
+                continue
+        filtered_lines.append(line)
+    tailored_md = '\n'.join(filtered_lines).strip()
+
+    if re.search(r'\b(stanford|berkeley|bachelor|bachelor\'s|master|masteral|doctoral|associate|degree|university|college|school|30\+ years|30 years)\b', tailored_md, re.I):
+        print("Suspicious hallucinated education/experience details detected; falling back to the verified base resume text.")
+        tailored_md = base_text
+
     # Globally strip markdown code blocks if present
     tailored_md = tailored_md.replace("```markdown", "").replace("```", "").strip()
     
@@ -49,51 +78,17 @@ def generate_custom_resume(email_body, base_resume_path, output_path):
         tailored_md = tailored_md.replace("cyclsun@gmail.com", "cyclsun@gmail.com | www.microcompit.com")
     
     # STRIP ANY AI PARENTHETICAL NOTES
-    import re
     tailored_md = re.sub(r'\(Note:.*?\)', '', tailored_md)
     # Ensure the date is exactly as requested
     tailored_md = tailored_md.replace("March 2026", "March 24, 2026")
     tailored_md = tailored_md.replace("March 24, 2026", "March 24, 2026") # Ensure it's not doubled
 
-    print(f"Saving to {output_path}...")
-    doc = Document()
-    
-    # MANUALLY ADD THE HEADER TO ENSURE IT IS ALWAYS THERE
-    doc.add_heading("Jose C. Ramirez", level=1)
-    doc.add_paragraph("Chandler, AZ | (480) 209-3709 | cyclsun@gmail.com | www.microcompit.com | https://github.com/cyclonesundevil")
-    doc.add_paragraph("---")
-    
-    lines = tailored_md.split('\n')
-    skip_header = True
-    for line in lines:
-        line = line.strip()
-        if not line: continue
-        
-        # Skip the AI-generated header and conversational text
-        if skip_header:
-            if any(x in line for x in ["Jose C. Ramirez", "Chandler", "cyclsun", "github", "Here is your", "Markdown", "updated resume"]):
-                continue
-            if line == "---" or line == "Technical Skills":
-                skip_header = False
-                if line == "---": continue
-        
-        # Strip AI notes and enforce Wells Fargo dates
-        import re
-        line = re.sub(r'\(Note:.*?\)', '', line).strip()
-        if "Wells Fargo" in line and ("Jan 2013" in line or "July 2014" in line):
-            line = "Wells Fargo | Jan 2013 - March 24, 2026"
-
-        if line.startswith('# '): doc.add_heading(line[2:], level=1)
-        elif line.startswith('## '): doc.add_heading(line[3:], level=2)
-        elif line.startswith('### '): doc.add_heading(line[4:], level=3)
-        elif line.startswith('- '): doc.add_paragraph(line[2:].replace('**', ''), style='List Bullet')
-        else: doc.add_paragraph(line.replace('**', ''))
-            
-    doc.save(output_path)
+    print(f"Saving formatted resume to {output_path}...")
+    render_tailored_resume_on_template(base_resume_path, tailored_md, output_path)
     print("Resume generated successfully!")
     return output_path
 
 if __name__ == "__main__":
     with open('full_email_utf8.txt', 'r', encoding='utf-8') as f:
         email_body = f.read()
-    generate_custom_resume(email_body, 'base_resume.docx', 'tailored_resume_final_v17.docx')
+    generate_custom_resume(email_body, 'base_resume.docx', 'tailored_resume_final_v18.docx')
